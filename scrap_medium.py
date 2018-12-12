@@ -11,6 +11,11 @@ try:
 	os.mkdir(f'./{query}')
 except FileExistsError:
 	pass
+
+try:
+	os.mkdir(f'./{query}/docs')
+except FileExistsError:
+	pass
 header = {'User-Agent':'Mozilla/5.0'}
 url = "https://medium.com/search"
 
@@ -23,6 +28,7 @@ def generate_query(ids):
 	return url + "/posts?q={0}&count=10&ignore=".format(query) + '&ignore='.join(list(itertools.chain.from_iterable(ids)))
 
 path = f'./{query}/'
+doc_path = path + 'docs/'
 id_collection = []
 link_collection = []
 texts_collection = {}
@@ -69,7 +75,11 @@ def get_data(url, req_ids=False):
 	
 	texts = {links[indx]:' '.join([j.text for j in i.find_all('p')]) for indx, i in enumerate(soups)}
 	texts_collection[generate_query(id_collection) if req_ids else url + "?q={0}".format(query)] = texts
-	pickle.dump(texts_collection, ftxts)
+	# pickle.dump(texts_collection, ftxts)
+	# print(texts.keys())
+	docs = [open(doc_path + f"{query}-{str(key.split('?')[0].split('-')[-1])}.html", 'w') for key in texts.keys()]
+	for i, j in enumerate(texts):
+		docs[i].write(texts[j])
 	print(texts_collection.keys())
 	# f = open(query + '.txt', 'w')
 	# f.write(' '.join(['{}: {}'.format(i, texts[i]) for  i in texts.keys()]))
@@ -83,5 +93,5 @@ get_data(url)
 fw.close()
 fids.close()
 ftxts.close()
-# for i in id_collection:
-# 	print(i)
+
+print(f'Total keys: {len(texts_collection.keys())}')
